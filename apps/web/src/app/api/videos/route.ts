@@ -41,6 +41,7 @@ function parseUpload(req: Request): Promise<ParsedUpload> {
     const fields: Record<string, string> = {};
     let saved: { fileName: string; mimeType: string; size: number } | null = null;
     let writeDone: Promise<void> | null = null;
+    let target: string | null = null;
     let failed: Error | null = null;
 
     bb.on("field", (name, value) => (fields[name] = value));
@@ -51,17 +52,24 @@ function parseUpload(req: Request): Promise<ParsedUpload> {
         return;
       }
       const fileName = `${randomUUID()}${EXT_BY_MIME[info.mimeType]}`;
-      const target = videoPath(fileName);
+      target = videoPath(fileName);
       let size = 0;
       stream.on("data", (chunk: Buffer) => (size += chunk.length));
       stream.on("limit", () => {
         failed = new UploadError(`Video must be under ${MAX_VIDEO_BYTES / 1024 / 1024} MB`, 413);
       });
-      writeDone = pipeline(stream, fs.createWriteStream(target)).then(() => {
+      writeDone = pipeline(stream, fs.createWriteStream(target!)).then(() => {
         saved = { fileName, mimeType: info.mimeType, size };
       });
     });
-    bb.on("error", reject);
+    // Truncated/malformed body (e.g. the connection dropped mid-upload): remove the partial file.
+    bb.on("error", (e) => {
+      const partial = target;
+      void Promise.resolve(writeDone)
+        .catch(() => {})
+        .finally(() => partial && fs.rm(partial, { force: true }, () => {}));
+      reject(new UploadError(`The upload was interrupted (${(e as Error).message}). Please try again.`));
+    });
     bb.on("close", async () => {
       try {
         await writeDone;

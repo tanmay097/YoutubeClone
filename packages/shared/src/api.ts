@@ -1,9 +1,11 @@
 import type {
   AuthResponse,
+  ChannelDetail,
   CommentItem,
   ImageKitAuthParams,
   Paginated,
   PublicUser,
+  SearchResults,
   VideoDetail,
   VideoSummary,
 } from "./types";
@@ -60,6 +62,11 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
     absolute: (path: string) => (/^https?:\/\//.test(path) ? path : `${root}${path}`),
     toggleLike: (id: string) =>
       request<{ liked: boolean; likeCount: number }>(`/api/videos/${id}/like`, { method: "POST" }),
+    search: (q: string) => request<SearchResults>(`/api/search?q=${encodeURIComponent(q)}`),
+    getChannel: (id: string, cursor?: string) =>
+      request<{ channel: ChannelDetail; videos: Paginated<VideoSummary> }>(
+        `/api/channels/${id}${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ""}`,
+      ),
     toggleSubscribe: (channelId: string) =>
       request<{ subscribed: boolean; subscriberCount: number }>(`/api/channels/${channelId}/subscribe`, {
         method: "POST",

@@ -31,6 +31,7 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen name="index" options={{ title: "Home", headerTitle: () => <Brand />, headerTitleAlign: "left", tabBarIcon: icon("home") }} />
+      <Tabs.Screen name="search" options={{ title: "Search", tabBarIcon: icon("search") }} />
       <Tabs.Screen name="upload" options={{ title: "Upload", tabBarIcon: icon("upload") }} />
       <Tabs.Screen name="account" options={{ title: "You", tabBarIcon: icon("user") }} />
     </Tabs>

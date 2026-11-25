@@ -1,6 +1,7 @@
 "use client";
 
 import { IK_TR, formatCount, formatViews, timeAgo, type VideoDetail } from "@vidora/shared";
+import Link from "next/link";
 import { use, useEffect, useRef, useState } from "react";
 import { api, imageSrc } from "@/lib/client";
 import { Avatar } from "@/components/Avatar";
@@ -65,11 +66,13 @@ export default function WatchPage({ params }: { params: Promise<{ id: string }> 
 
             <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <Avatar src={video.owner.avatarUrl} name={video.owner.name} size={40} />
-                <div className="min-w-0">
-                  <p className="truncate font-semibold">{video.owner.name}</p>
-                  <p className="text-xs text-muted">{formatCount(subs)} subscribers</p>
-                </div>
+                <Link href={`/channel/${video.owner.id}`} className="flex min-w-0 items-center gap-3 rounded-lg">
+                  <Avatar src={video.owner.avatarUrl} name={video.owner.name} size={40} />
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold hover:underline">{video.owner.name}</p>
+                    <p className="text-xs text-muted">{formatCount(subs)} subscribers</p>
+                  </div>
+                </Link>
                 {!video.isOwner && (
                   <div className="ml-3">
                     <SubscribeButton channelId={video.owner.id} initial={video.subscribedToOwner} onCount={setSubs} />

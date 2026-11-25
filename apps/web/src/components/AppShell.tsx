@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { IKIcon } from "./IKIcon";
 import { Avatar } from "./Avatar";
 import { useAuth } from "./AuthProvider";
@@ -38,6 +38,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
 function TopBar({ onMenu }: { onMenu: () => void }) {
   const { user, loading } = useAuth();
+  const pathname = usePathname();
+  const bare = pathname === "/login" || pathname === "/register";
   return (
     <header className="fixed inset-x-0 top-0 z-50 flex h-14 items-center justify-between gap-4 bg-bg/95 px-2 backdrop-blur sm:px-4">
       <div className="flex items-center gap-1">
@@ -51,9 +53,15 @@ function TopBar({ onMenu }: { onMenu: () => void }) {
         </button>
         <Link href="/" className="flex items-center gap-1.5 rounded-lg px-2 py-1" aria-label="Vidora home">
           <IKIcon name="logo" size={30} />
-          <span className="text-xl font-extrabold tracking-tight">Vidora</span>
+          <span className="hidden text-xl font-extrabold tracking-tight sm:inline">Vidora</span>
         </Link>
       </div>
+
+      {!bare && (
+        <Suspense fallback={<div className="hidden max-w-xl flex-1 sm:block" />}>
+          <SearchBar />
+        </Suspense>
+      )}
 
       <div className="flex items-center gap-2">
         {user && (
@@ -80,6 +88,51 @@ function TopBar({ onMenu }: { onMenu: () => void }) {
         )}
       </div>
     </header>
+  );
+}
+
+function SearchBar() {
+  const params = useSearchParams();
+  const pathname = usePathname();
+  const current = pathname === "/search" ? params.get("q") ?? "" : "";
+  // Re-mount when the URL query changes so the input mirrors it.
+  return <SearchForm key={current} initial={current} />;
+}
+
+function SearchForm({ initial }: { initial: string }) {
+  const router = useRouter();
+  const [q, setQ] = useState(initial);
+
+  return (
+    <form
+      role="search"
+      onSubmit={(e) => {
+        e.preventDefault();
+        const term = q.trim();
+        if (term) router.push(`/search?q=${encodeURIComponent(term)}`);
+      }}
+      className="flex min-w-0 max-w-xl flex-1"
+    >
+      <label htmlFor="site-search" className="sr-only">
+        Search channels and videos
+      </label>
+      <input
+        id="site-search"
+        type="search"
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        placeholder="Search"
+        maxLength={100}
+        className="h-10 min-w-0 flex-1 rounded-l-full border border-line bg-bg px-4 text-[15px] outline-none placeholder:text-muted focus:border-link"
+      />
+      <button
+        type="submit"
+        aria-label="Search"
+        className="flex h-10 w-14 shrink-0 cursor-pointer items-center justify-center rounded-r-full border border-l-0 border-line bg-chip transition-colors duration-200 hover:bg-chip-hover"
+      >
+        <IKIcon name="search" size={20} />
+      </button>
+    </form>
   );
 }
 
