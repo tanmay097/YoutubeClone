@@ -25,6 +25,7 @@ function RootStack() {
     <Stack screenOptions={{ headerStyle: { backgroundColor: colors.bg }, headerTintColor: colors.fg, contentStyle: { backgroundColor: colors.bg } }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="watch/[id]" options={{ title: "", headerBackTitle: "Back" }} />
+      <Stack.Screen name="channel/[id]" options={{ title: "", headerBackTitle: "Back" }} />
       <Stack.Screen name="login" options={{ title: "Sign in", presentation: "modal" }} />
       <Stack.Screen name="register" options={{ title: "Create account", presentation: "modal" }} />
     </Stack>

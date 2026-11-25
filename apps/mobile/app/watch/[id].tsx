@@ -122,6 +122,7 @@ function Header({
   onComment: (c: CommentItem) => void;
 }) {
   const { user } = useAuth();
+  const router = useRouter();
   const [liked, setLiked] = useState(video.likedByMe);
   const [likes, setLikes] = useState(video.likeCount);
   const [subscribed, setSubscribed] = useState(video.subscribedToOwner);
@@ -173,11 +174,18 @@ function Header({
       <Text style={s.title}>{video.title}</Text>
 
       <View style={s.row}>
-        <Avatar src={video.owner.avatarUrl} name={video.owner.name} size={40} />
-        <View style={{ flex: 1 }}>
-          <Text style={s.channel} numberOfLines={1}>{video.owner.name}</Text>
-          <Text style={s.muted}>{formatCount(subs)} subscribers</Text>
-        </View>
+        <Pressable
+          onPress={() => router.push({ pathname: "/channel/[id]", params: { id: video.owner.id } })}
+          accessibilityRole="link"
+          accessibilityLabel={`${video.owner.name} channel`}
+          style={[s.row, { flex: 1 }]}
+        >
+          <Avatar src={video.owner.avatarUrl} name={video.owner.name} size={40} />
+          <View style={{ flex: 1 }}>
+            <Text style={s.channel} numberOfLines={1}>{video.owner.name}</Text>
+            <Text style={s.muted}>{formatCount(subs)} subscribers</Text>
+          </View>
+        </Pressable>
         {!video.isOwner && (
           <Pressable
             onPress={toggleSub}

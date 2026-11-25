@@ -19,12 +19,16 @@ export function VideoCard({ video }: { video: VideoSummary }) {
         </div>
       </Link>
       <div className="mt-3 flex gap-3">
-        <Avatar src={video.owner.avatarUrl} name={video.owner.name} size={36} />
+        <Link href={`/channel/${video.owner.id}`} className="h-fit rounded-full" aria-label={`${video.owner.name} channel`}>
+          <Avatar src={video.owner.avatarUrl} name={video.owner.name} size={36} />
+        </Link>
         <div className="min-w-0">
           <Link href={`/watch/${video.id}`}>
             <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug">{video.title}</h3>
           </Link>
-          <p className="mt-1 truncate text-sm text-muted">{video.owner.name}</p>
+          <Link href={`/channel/${video.owner.id}`} className="mt-1 block truncate text-sm text-muted transition-colors hover:text-fg">
+            {video.owner.name}
+          </Link>
           <p className="text-sm text-muted">
             {formatViews(video.views)} · {timeAgo(video.createdAt)}
           </p>

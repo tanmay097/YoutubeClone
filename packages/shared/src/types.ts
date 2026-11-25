@@ -50,3 +50,17 @@ export interface ImageKitAuthParams {
   publicKey: string;
   urlEndpoint: string;
 }
+
+export interface ChannelSummary extends PublicUser {
+  videoCount: number;
+}
+
+export interface ChannelDetail extends ChannelSummary {
+  subscribedByMe: boolean;
+  isMe: boolean;
+}
+
+export interface SearchResults {
+  channels: ChannelSummary[];
+  videos: VideoSummary[];
+}
