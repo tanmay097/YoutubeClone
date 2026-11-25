@@ -1,0 +1,23 @@
+{
+  "name": "vidora",
+  "private": true,
+  "workspaces": [
+    "apps/web",
+    "apps/mobile",
+    "apps/desktop",
+    "packages/shared"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev -w web",
+    "dev:mobile": "npm run start -w mobile",
+    "dev:desktop": "npm run dev -w desktop",
+    "build": "npm run build -w web",
+    "lint": "npm run lint -w web",
+    "typecheck": "npm run typecheck -w @vidora/shared && npm run typecheck -w web && npm run typecheck -w mobile && npm run typecheck -w desktop",
+    "seed:icons": "npm run seed:icons -w web",
+    "dev:db": "node scripts/dev-db.mjs"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^10.4.3"
+  }
+}

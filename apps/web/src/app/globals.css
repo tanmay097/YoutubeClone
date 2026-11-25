@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+/* Vidora dark design tokens: YouTube-inspired near-black surfaces + red accent
+   (from ui-ux-pro-max: dark-mode-oled style, "breaking red + link blue" palette, Inter). */
+:root {
+  color-scheme: dark;
+  --bg: #0f0f0f;
+  --surface: #181818;
+  --elevated: #212121;
+  --chip: #272727;
+  --chip-hover: #3f3f3f;
+  --border: #303030;
+  --fg: #f1f1f1;
+  --fg-muted: #aaaaaa;
+  --primary: #dc2626;
+  --primary-hover: #b91c1c;
+  --link: #3ea6ff;
+  --danger: #f87171;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-elevated: var(--elevated);
+  --color-chip: var(--chip);
+  --color-chip-hover: var(--chip-hover);
+  --color-line: var(--border);
+  --color-fg: var(--fg);
+  --color-muted: var(--fg-muted);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-link: var(--link);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--fg);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+::selection {
+  background: rgba(62, 166, 255, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

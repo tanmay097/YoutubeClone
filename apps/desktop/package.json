@@ -1,0 +1,30 @@
+{
+  "name": "desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Vidora desktop app",
+  "author": "Vidora",
+  "main": "dist/main.js",
+  "scripts": {
+    "build:ts": "tsc -p tsconfig.json",
+    "dev": "npm run build:ts && wait-on http-get://localhost:3000 && electron .",
+    "start": "npm run build:ts && electron .",
+    "dist": "npm run build:ts && electron-builder",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "electron": "^45.5.0",
+    "electron-builder": "^26.18.0",
+    "typescript": "^5",
+    "wait-on": "^9.5.1"
+  },
+  "build": {
+    "appId": "com.vidora.desktop",
+    "productName": "Vidora",
+    "files": ["dist/**/*", "build/**/*"],
+    "directories": { "output": "release" },
+    "mac": { "category": "public.app-category.video", "icon": "build/icon.png" },
+    "win": { "icon": "build/icon.png" },
+    "linux": { "icon": "build/icon.png" }
+  }
+}
