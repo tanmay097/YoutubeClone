@@ -12,9 +12,9 @@
   },
   "dependencies": {
     "@imagekit/next": "^2.1.6",
+    "@vercel/blob": "^2.9.0",
     "@vidora/shared": "*",
     "bcryptjs": "^3.0.2",
-    "busboy": "^1.6.0",
     "jose": "^6.2.18",
     "mongoose": "^9.13.1",
     "next": "16.4.6",
@@ -24,7 +24,6 @@
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "4.3.3",
-    "@types/busboy": "^1.5.4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

@@ -25,7 +25,7 @@ export const GET = handler(async (req: Request, ctx: RouteContext<"/api/videos/[
   const video: VideoDetail = {
     ...toVideoSummary(v),
     description: v.description ?? "",
-    streamUrl: `/api/videos/${id}/stream`,
+    streamUrl: v.videoUrl,
     likedByMe: !!liked,
     subscribedToOwner: !!subscribed,
     isOwner: viewerId === ownerId,
