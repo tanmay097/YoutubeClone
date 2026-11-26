@@ -9,7 +9,7 @@ import type {
   VideoDetail,
   VideoSummary,
 } from "./types";
-import type { LoginInput, RegisterInput } from "./schemas";
+import type { CreateVideoInput, LoginInput, RegisterInput } from "./schemas";
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -56,6 +56,8 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
     imagekitAuth: () => request<ImageKitAuthParams>("/api/imagekit-auth"),
     listVideos: (cursor?: string) =>
       request<Paginated<VideoSummary>>(`/api/videos${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ""}`),
+    createVideo: (input: CreateVideoInput) =>
+      request<{ video: VideoSummary }>("/api/videos", { method: "POST", body: json(input) }),
     getVideo: (id: string) => request<{ video: VideoDetail }>(`/api/videos/${id}`),
     recordView: (id: string) => request<{ views: number }>(`/api/videos/${id}/view`, { method: "POST" }),
     /** Absolute URL for a server-relative path such as a video's streamUrl. */

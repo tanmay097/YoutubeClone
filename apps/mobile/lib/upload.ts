@@ -1,3 +1,5 @@
+import { upload } from "@vercel/blob/client";
+import { videoBlobPathname } from "@vidora/shared";
 import { API_URL } from "./config";
 import { api, tokenStore } from "./api";
 
@@ -23,33 +25,33 @@ export async function uploadImageToImageKit(file: PickedFile, folder: string): P
   return body.url as string;
 }
 
-/** Streams the video to our API with progress (XHR exposes upload progress in React Native). */
-export function uploadVideo(
+/**
+ * Uploads the video straight to Vercel Blob (our API only signs a token, authorised by the bearer header),
+ * then creates the Video record. Single PUT rather than multipart: multipart relies on ReadableStream,
+ * which React Native doesn't fully support; the SDK uses XHR here, so progress events still work.
+ */
+export async function uploadVideo(
+  userId: string,
   fields: { title: string; description: string; thumbnailUrl: string },
   video: PickedFile,
   onProgress: (pct: number) => void,
 ): Promise<{ id: string }> {
-  return new Promise((resolve, reject) => {
-    const form = new FormData();
-    form.append("title", fields.title);
-    form.append("description", fields.description);
-    form.append("thumbnailUrl", fields.thumbnailUrl);
-    form.append("video", rnFile(video));
-
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", `${API_URL}/api/videos`);
-    const token = tokenStore.get();
-    if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
-    xhr.upload.onprogress = (e) => e.lengthComputable && onProgress(Math.round((e.loaded / e.total) * 100));
-    xhr.onload = () => {
-      let body: { error?: string; video?: { id: string } } = {};
-      try {
-        body = JSON.parse(xhr.responseText);
-      } catch {}
-      if (xhr.status >= 200 && xhr.status < 300 && body.video) resolve(body.video);
-      else reject(new Error(body.error || `Upload failed (${xhr.status})`));
-    };
-    xhr.onerror = () => reject(new Error("Network error. Is the server reachable?"));
-    xhr.send(form);
-  });
+  const token = tokenStore.get();
+  const body = await (await fetch(video.uri)).blob();
+  let blobUrl: string;
+  try {
+    const blob = await upload(videoBlobPathname(userId, video.type), body, {
+      access: "public",
+      handleUploadUrl: `${API_URL}/api/videos/upload`,
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      contentType: video.type,
+      multipart: false,
+      onUploadProgress: (p) => onProgress(Math.round(p.percentage)),
+    });
+    blobUrl = blob.url;
+  } catch (e) {
+    throw new Error((e as Error).message || "Network error. Is the server reachable?");
+  }
+  const { video: created } = await api.createVideo({ ...fields, videoUrl: blobUrl });
+  return created;
 }

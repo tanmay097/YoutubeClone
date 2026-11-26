@@ -5,7 +5,7 @@ const VideoSchema = new Schema(
     title: { type: String, required: true, trim: true, maxlength: 100 },
     description: { type: String, default: "", maxlength: 5000 },
     owner: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
-    fileName: { type: String, required: true },
+    videoUrl: { type: String, required: true, unique: true }, // Vercel Blob URL; served directly by its CDN
     mimeType: { type: String, required: true },
     size: { type: Number, required: true },
     thumbnailUrl: { type: String, required: true },

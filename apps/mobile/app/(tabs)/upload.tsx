@@ -65,7 +65,7 @@ export default function UploadScreen() {
     if (!meta.success) return setErr(meta.error.issues[0].message);
     setPct(0);
     try {
-      const { id } = await uploadVideo(meta.data, video, setPct);
+      const { id } = await uploadVideo(user.id, meta.data, video, setPct);
       setVideo(null);
       setThumbUrl(null);
       setTitle("");

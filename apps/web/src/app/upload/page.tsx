@@ -1,10 +1,13 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
-import { ALLOWED_VIDEO_TYPES, IK_UPLOAD_FOLDERS, MAX_VIDEO_BYTES, videoMetaSchema } from "@vidora/shared";
+import { ALLOWED_VIDEO_TYPES, IK_UPLOAD_FOLDERS, MAX_VIDEO_BYTES, videoBlobPathname, videoMetaSchema } from "@vidora/shared";
+import { upload } from "@vercel/blob/client";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { uploadImageToImageKit } from "@/lib/ikUpload";
+import { api } from "@/lib/client";
+import { useAuth } from "@/components/AuthProvider";
 import { IKIcon } from "@/components/IKIcon";
 import { primaryBtn } from "@/components/Field";
 
@@ -12,6 +15,7 @@ type Stage = "idle" | "uploading" | "done";
 
 export default function UploadPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [video, setVideo] = useState<File | null>(null);
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [thumbUrl, setThumbUrl] = useState<string | null>(null);
@@ -49,40 +53,33 @@ export default function UploadPage() {
     }
   }
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
+    if (!user) return setErr("Please sign in to upload.");
     if (!video) return setErr("Choose a video to upload.");
     const meta = videoMetaSchema.safeParse({ title, description, thumbnailUrl: thumbUrl ?? "" });
     if (!meta.success) return setErr(meta.error.issues[0].message);
 
-    const body = new FormData();
-    body.append("title", meta.data.title);
-    body.append("description", meta.data.description);
-    body.append("thumbnailUrl", meta.data.thumbnailUrl);
-    body.append("video", video); // file last so fields are parsed first
-
-    // XHR (not fetch) so we get upload progress events.
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", "/api/videos");
-    xhr.upload.onprogress = (ev) => ev.lengthComputable && setPct(Math.round((ev.loaded / ev.total) * 100));
-    xhr.onload = () => {
-      const res = JSON.parse(xhr.responseText || "{}");
-      if (xhr.status >= 200 && xhr.status < 300) {
-        setStage("done");
-        router.push(`/watch/${res.video.id}`);
-      } else {
-        setStage("idle");
-        setErr(res.error || "Upload failed");
-      }
-    };
-    xhr.onerror = () => {
-      setStage("idle");
-      setErr("Network error during upload");
-    };
     setStage("uploading");
     setPct(0);
-    xhr.send(body);
+    try {
+      // 1) Browser → Vercel Blob directly (our API only signs a token; Vercel caps function bodies at 4.5 MB).
+      const blob = await upload(videoBlobPathname(user.id, video.type), video, {
+        access: "public",
+        handleUploadUrl: "/api/videos/upload",
+        contentType: video.type,
+        multipart: true,
+        onUploadProgress: (p) => setPct(Math.round(p.percentage)),
+      });
+      // 2) Create the Video record pointing at the uploaded blob.
+      const res = await api.createVideo({ ...meta.data, videoUrl: blob.url });
+      setStage("done");
+      router.push(`/watch/${res.video.id}`);
+    } catch (e) {
+      setStage("idle");
+      setErr((e as Error).message || "Upload failed");
+    }
   }
 
   const busy = stage !== "idle";
